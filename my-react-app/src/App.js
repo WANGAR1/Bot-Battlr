@@ -1,15 +1,15 @@
-import React, { Component } from "react";
-import BotsPage from './containers/BotsPage';
-import "./App.css";
+import React from "react";
+import './App.css';
+import BotsPage from "./Components/BotsPage";
 
-class App extends Component {
-  render() {
-    return (
+function App() {
+  return (
+    <div className="main-container">  
       <div className="App">
-        <BotsPage />
+         <BotsPage />
       </div>
-    );
-  }
+    </div>  
+  );
 }
 
 export default App;

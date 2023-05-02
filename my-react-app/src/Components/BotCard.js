@@ -1,39 +1,30 @@
 import React from "react";
 
-const BotCard = props => {
-  const { bot } = props;
+const botTypeClasses = {
+  Assault: "icon military",
+  Defender: "icon shield",
+  Support: "icon plus circle",
+  Medic: "icon ambulance",
+  Witch: "icon magic",
+  Captain: "icon star",
+};
 
-  let botType;
-
-  switch (bot.bot_class) {
-    case "Assault":
-      botType = <i className="icon military" />;
-      break;
-    case "Defender":
-      botType = <i className="icon shield" />;
-      break;
-    case "Support":
-      botType = <i className="icon ambulance" />;
-      break;
-    default:
-      botType = <div />;
-  }
-
+function BotCard({bot,handleClick, handleDelete}) {
   return (
     <div className="ui column">
       <div
         className="ui card"
         key={bot.id}
-        onClick={() => props.addBot(bot)}
+        onClick={() =>handleClick(bot.id)}
       >
         <div className="image">
           <img alt="oh no!" src={bot.avatar_url} />
         </div>
         <div className="content">
           <div className="header">
-            {bot.name} {botType}
+            {bot.name}
+            <i className={botTypeClasses[bot.bot_class]} />
           </div>
-
           <div className="meta text-wrap">
             <small>{bot.catchphrase}</small>
           </div>
@@ -52,11 +43,23 @@ const BotCard = props => {
             <i className="icon shield" />
             {bot.armor}
           </span>
+          <span>
+            <div className="ui center aligned segment basic">
+              <button
+                className="ui mini red button"
+                onClick={(e) =>
+                { e.stopPropagation()
+                  handleDelete(bot.id)
+                }
+                }>
+                x
+              </button>
+            </div>
+          </span>
         </div>
       </div>
     </div>
   );
-
-};
+}
 
 export default BotCard;

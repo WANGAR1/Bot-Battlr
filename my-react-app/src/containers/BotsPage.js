@@ -1,130 +1,59 @@
-import React from "react";
-import BotsCollection from './BotCollection'
+import React, { Component } from "react";
+import BotCollection from './BotCollection'
 import YourBotArmy from './YourBotArmy'
-import BotSpecs from '../components/BotSpecs'
-import BotSearch from '../components/BotSearch'
-import Filter from '../components/Filter'
 
-class BotsPage extends React.Component {
+class BotsPage extends Component {
+
   constructor(){
     super()
     this.state = {
-      allBots: [],
-      selectBot: undefined,
-      query: '',
-      filter: 'All'
+      bots: [],
+      botArmy: []
     }
   }
 
   componentDidMount(){
-    fetch('https://bot-battler-api.herokuapp.com/api/v1/bots')
+    fetch(`http://localhost:6001/bots`)
     .then(res => res.json())
-    .then(bots => this.setBots(bots))
-      .then(bots => this.setState({
-        allBots: bots
+    .then(bots => this.setState({ bots }))
+  }
+
+  addBotToArmy = (armyBot) => {
+    if(!this.state.botArmy.find(bot => bot === armyBot)){
+      const foundBot = this.state.bots.find(bot => bot === armyBot)
+      this.setState((state) => ({
+        botArmy: [...state.botArmy, foundBot]
       }))
+    } 
   }
 
-  setBots = (bots) => {
-    return bots.map(bot => {
-      bot.owned = false
-      return bot
-    })
+  dischargeBot = (armyBot) => {
+    const botArmy = this.state.botArmy.filter(bot => bot !== armyBot)
+    this.setState({ botArmy })
   }
 
-  clickBot = (bot) => {
-    this.setState({
-      selectBot: bot
-    })
-  }
+  dischargeForever = (armyBot) => {
+    // debugger
+    if(this.state.botArmy.find(bot => bot === armyBot)){
+      const bots = this.state.bots.filter(bot => bot !== armyBot)
+      const botArmy = this.state.botArmy.filter(bot => bot !== armyBot)
 
-  addBot = (selectBot) => {
-    let x = this.state.allBots.map(bot => {
-      if(bot.id === selectBot.id){
-        bot.owned = !bot.owned
-        return bot
-      }else {
-        return bot
-      }
-    })
-    this.setState({
-      allBots: x
-    })
-  }
+      this.setState({ bots, botArmy })
 
-  filterFreeBots = () => {
-    let freeBots = []
-    this.state.allBots.map(bot => {
-      if(bot.owned === false){
-        freeBots.push(bot)
-      }
-    })
-    if(this.state.filter !== 'All'){
-      freeBots = freeBots.filter(bot => 
-        bot.bot_class == this.state.filter
-      )
+      fetch(`http://localhost:6001/bots/${armyBot.id}`, {
+        method: 'DELETE'
+      })
+    } else {
+      console.log("not even enlisted")
     }
-    if(this.state.query){
-      freeBots = freeBots.filter(bot=> 
-        bot.name.toLowerCase().includes(this.state.query.toLowerCase())
-      )
-    }
-    return freeBots
   }
 
-  filterOwnedBots = () => {
-    let ownedBots = []
-    this.state.allBots.map(bot => {
-      if(bot.owned === true){
-        ownedBots.push(bot)
-      }
-    })
-    let filtered = ownedBots.filter(bot=> {
-      return bot.name.toLowerCase().includes(this.state.query.toLowerCase())
-    })
-    return filtered
-  }
-
-  handleClear = () => {
-    this.setState({
-      query: ''
-    })
-  }
-
-  handleChange = (query) => {
-    this.setState({
-      query: query
-    })
-  }
-
-  clearSpec = () => {
-    this.setState({
-      selectBot: undefined
-    })
-  }
-
-  filterChange = (value) => {
-    this.setState({
-      filter: value
-    })
-  }
-
-  
   render() {
-    console.log(this.state)
-    return (
-      <div>
-        <BotSearch handleClear={this.handleClear} handleChange={this.handleChange}/>
-        <br></br>
-        <Filter filterChange={this.filterChange}/>
-        <YourBotArmy bots={this.filterOwnedBots()} addBot={this.clickBot}/>
-        <br></br>
-        {this.state.selectBot ? <BotSpecs bot={this.state.selectBot} clearSpec={this.clearSpec} addBot={this.addBot} />: 
-          <BotsCollection bots={this.filterFreeBots()} addBot={this.clickBot}/>}
-      </div>
-    );
+    return (<div>
+      <YourBotArmy bots={this.state.botArmy} dischargeBot={this.dischargeBot} dischargeForever={this.dischargeForever}/>
+      <BotCollection bots={this.state.bots} addBot={this.addBotToArmy} dischargeForever={this.dischargeForever}/>
+    </div>);
   }
-
 }
 
 export default BotsPage;
